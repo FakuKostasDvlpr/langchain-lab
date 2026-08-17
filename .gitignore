@@ -1,0 +1,30 @@
+# Entornos virtuales
+langchain/
+venv/
+.venv/
+env/
+
+# Secretos
+.env
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Material del curso (no redistribuible)
+*.pdf
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Editores / SO
+.vscode/
+.idea/
+.claude/
+Thumbs.db
+desktop.ini
+.DS_Store

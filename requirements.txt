@@ -1,0 +1,6 @@
+# Versiones con las que este repo fue probado (Python 3.14)
+langchain==0.3.30
+langchain-core==0.3.86
+langchain-google-genai==2.1.12
+streamlit==1.61.1
+python-dotenv==1.2.3
