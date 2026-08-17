@@ -25,11 +25,34 @@ st.set_page_config(page_title="Chatbot con LangChain", page_icon="💬")
 st.title("💬 Chatbot con memoria")
 st.caption(f"LangChain + Streamlit + {MODELO}")
 
-if not os.getenv("GOOGLE_API_KEY"):
-    st.error("Falta `GOOGLE_API_KEY`. Copiá `.env.example` a `.env` y completala.")
+def obtener_api_key() -> str | None:
+    """Busca la API key en los dos lugares donde puede estar.
+
+    Local: variable de entorno, cargada del .env por load_dotenv().
+    Streamlit Cloud: panel de Secrets, accesible via st.secrets.
+
+    Acceder a st.secrets sin que exista un secrets.toml lanza excepcion, por eso
+    va en try. Asi el mismo codigo corre en los dos lados sin ramas por entorno.
+    """
+    if clave := os.getenv("GOOGLE_API_KEY"):
+        return clave
+    try:
+        return st.secrets["GOOGLE_API_KEY"]
+    except Exception:
+        return None
+
+
+api_key = obtener_api_key()
+if not api_key:
+    st.error(
+        "Falta `GOOGLE_API_KEY`. En local: copiá `.env.example` a `.env` y completala. "
+        "En Streamlit Cloud: cargala en *Settings → Secrets*."
+    )
     st.stop()
 
-chat_model = ChatGoogleGenerativeAI(model=MODELO, temperature=0.7)
+chat_model = ChatGoogleGenerativeAI(
+    model=MODELO, temperature=0.7, google_api_key=api_key
+)
 
 # Historial persistente entre reruns de Streamlit.
 # El SystemMessage define la personalidad y se manda al modelo, pero no se muestra.

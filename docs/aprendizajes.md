@@ -88,3 +88,28 @@ pista de que el problema es el orden.
 **Lo que me llevo:** configuración implícita por entorno = errores que no
 apuntan a su causa. Por eso las apps de este repo chequean explícitamente que
 la variable exista y muestran un mensaje claro antes de intentar nada.
+
+---
+
+## 6. Probar una app de Streamlit corriéndola con `python` no sirve
+
+**Contexto:** preparando el deploy quise verificar que, si me olvidaba de cargar
+el secret, el usuario viera mi mensaje de error y no un stack trace.
+
+**Lo que hice mal:** correr `python app.py` directo. Eso ejecuta el script en
+*bare mode*, sin el runtime de Streamlit. En ese modo **`st.stop()` no detiene
+nada**: la ejecución seguía de largo hasta instanciar el modelo sin credenciales
+y explotaba con un `DefaultCredentialsError` ilegible. Conclusión aparente: mi
+manejo de errores estaba roto.
+
+**Lo que pasaba en realidad:** con `streamlit run`, `st.stop()` funciona
+perfecto — el script runner la intercepta y corta la ejecución. El problema no
+era la app: era el método de prueba. Casi "arreglo" código que no estaba roto.
+
+**Arreglo:** usar `streamlit.testing.v1.AppTest`, que ejecuta la app con el
+runtime real sin levantar servidor ni navegador. Ahí se confirmó que el
+comportamiento era correcto, y esos chequeos quedaron como suite en `tests/`.
+
+**Lo que me llevo:** cuando un test falla, la primera pregunta es si el entorno
+de prueba reproduce el entorno real. Un falso positivo puede hacerte "corregir"
+código sano y romper lo que andaba.

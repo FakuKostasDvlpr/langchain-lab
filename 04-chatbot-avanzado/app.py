@@ -34,8 +34,29 @@ st.set_page_config(page_title="Chatbot avanzado", page_icon="🤖", layout="cent
 st.title("🤖 Chatbot avanzado")
 st.caption("LangChain + Streamlit · streaming y configuración en vivo")
 
-if not os.getenv("GOOGLE_API_KEY"):
-    st.error("Falta `GOOGLE_API_KEY`. Copiá `.env.example` a `.env` y completala.")
+def obtener_api_key() -> str | None:
+    """Busca la API key en los dos lugares donde puede estar.
+
+    Local: variable de entorno, cargada del .env por load_dotenv().
+    Streamlit Cloud: panel de Secrets, accesible via st.secrets.
+
+    Acceder a st.secrets sin que exista un secrets.toml lanza excepcion, por eso
+    va en try. Asi el mismo codigo corre en los dos lados sin ramas por entorno.
+    """
+    if clave := os.getenv("GOOGLE_API_KEY"):
+        return clave
+    try:
+        return st.secrets["GOOGLE_API_KEY"]
+    except Exception:
+        return None
+
+
+api_key = obtener_api_key()
+if not api_key:
+    st.error(
+        "Falta `GOOGLE_API_KEY`. En local: copiá `.env.example` a `.env` y completala. "
+        "En Streamlit Cloud: cargala en *Settings → Secrets*."
+    )
     st.stop()
 
 with st.sidebar:
@@ -62,7 +83,9 @@ with st.sidebar:
 
 # El modelo se reconstruye en cada rerun, asi que toma los valores del sidebar
 # apenas se mueven los controles.
-chat_model = ChatGoogleGenerativeAI(model=modelo, temperature=temperatura)
+chat_model = ChatGoogleGenerativeAI(
+    model=modelo, temperature=temperatura, google_api_key=api_key
+)
 
 plantilla = PromptTemplate(
     input_variables=["personalidad", "historial", "mensaje"],

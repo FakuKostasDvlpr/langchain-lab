@@ -57,6 +57,36 @@ streamlit run 04-chatbot-avanzado/app.py
 
 ---
 
+## Tests
+
+Las apps de Streamlit se testean con `AppTest`, el framework oficial: corre la app
+con el runtime real, sin servidor ni navegador.
+
+```bash
+pip install -r requirements-dev.txt
+pytest -v
+```
+
+Lo que cubren: que si falta la API key el usuario vea un **mensaje claro y no un
+stack trace** (el modo de falla más probable en un deploy público), que `st.stop()`
+frene antes de renderizar el chat, y que con credenciales la app arranque limpia.
+
+---
+
+## Deploy
+
+El chatbot avanzado está pensado para desplegarse en
+[Streamlit Community Cloud](https://share.streamlit.io):
+
+- **Entrypoint:** `04-chatbot-avanzado/app.py`
+- **Dependencias:** `requirements.txt` en la raíz (Cloud lo encuentra solo)
+- **Secret:** cargar `GOOGLE_API_KEY = "..."` en *Advanced settings → Secrets*
+
+El código resuelve la credencial desde `os.environ` (local, vía `.env`) o desde
+`st.secrets` (Cloud), sin ramas por entorno ni configuración duplicada.
+
+---
+
 ## Conceptos que cubre
 
 - **Chat models** y la interfaz uniforme de LangChain (`invoke`, `stream`).
@@ -66,6 +96,7 @@ streamlit run 04-chatbot-avanzado/app.py
 - **Streaming** de respuestas y su impacto en la latencia percibida.
 - **Estado en Streamlit**: qué sobrevive a los reruns y qué no.
 - **Manejo de secretos** con `.env` y verificación temprana de configuración.
+- **Testing de apps de Streamlit** con `AppTest`, sin servidor ni navegador.
 
 ---
 
